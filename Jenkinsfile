@@ -10,49 +10,66 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/Saitej-04/Enterprise-RAG-Assistant.git'
+                git branch: 'main',
+                    url: 'https://github.com/Saitej-04/Enterprise-RAG-Assistant.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_HUB/$IMAGE_NAME:latest .'
+                sh '''
+                docker build -t $DOCKER_HUB/$IMAGE_NAME:latest .
+                '''
             }
         }
 
-        stage('Login Docker Hub') {
+        stage('Docker Hub Login') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
                 }
             }
         }
 
-        stage('Push Image') {
+        stage('Push Docker Image') {
             steps {
-                sh 'docker push $DOCKER_HUB/$IMAGE_NAME:latest'
+                sh '''
+                docker push $DOCKER_HUB/$IMAGE_NAME:latest
+                '''
             }
         }
 
-        stage('Deploy Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/'
+                sh '''
+                kubectl apply -f configmap.yaml
+                kubectl apply -f secret.yaml
+                kubectl apply -f deployment.yaml
+                kubectl apply -f service.yaml
+                '''
             }
         }
-
     }
 
     post {
+
         success {
-            echo 'Deployment Successful!'
+            echo "Deployment Successful!"
         }
 
         failure {
-            echo 'Deployment Failed!'
+            echo "Deployment Failed!"
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
