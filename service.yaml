@@ -5,13 +5,13 @@ metadata:
   name: enterprise-rag-service
 
 spec:
-  type: NodePort
-
   selector:
-    app: enterprise-rag
+    app: rag
 
   ports:
-  - protocol: TCP
-    port: 8501
-    targetPort: 8501
-    nodePort: 30001
+    - protocol: TCP
+      port: 8501
+      targetPort: 8501
+      nodePort: 30001
+
+  type: NodePort

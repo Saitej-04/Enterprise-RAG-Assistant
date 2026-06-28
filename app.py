@@ -35,13 +35,10 @@ initialize_memory()
 with st.sidebar:
 
     st.title("💬 Chat")
-
     st.markdown("---")
 
     if st.button("🗑 Clear Chat"):
-
         clear_chat()
-
         st.rerun()
 
 # ---------------------------------
@@ -49,7 +46,6 @@ with st.sidebar:
 # ---------------------------------
 
 st.title("📊 Enterprise Financial Intelligence Assistant")
-
 st.markdown("### 📄 Upload Financial Documents")
 
 uploaded_files = st.file_uploader(
@@ -64,140 +60,142 @@ uploaded_files = st.file_uploader(
 
 if uploaded_files:
 
-    st.success(f"✅ {len(uploaded_files)} PDF(s) Uploaded Successfully")
+    try:
 
-    for file in uploaded_files:
+        st.success(f"✅ {len(uploaded_files)} PDF(s) Uploaded Successfully")
 
-        st.write(
-            f"📄 {file.name} ({round(file.size/1024,2)} KB)"
-        )
-
-    # Extract Documents
-
-    documents = extract_text_from_pdfs(uploaded_files)
-
-    # Split Documents
-
-    chunks = split_text(documents)
-
-    st.success(f"✅ Total Chunks : {len(chunks)}")
-
-    # Embeddings
-
-    embedding_model = get_embedding_model()
-
-    # Vector DB
-
-    vector_store = create_vector_store(
-        chunks,
-        embedding_model
-    )
-
-    # Retriever
-
-    retriever = get_retriever(vector_store)
-
-    # Gemini
-
-    llm = get_chat_model()
-
-    st.success("✅ Enterprise RAG Ready")
-        # ---------------------------------
-    # Display Previous Chat
-    # ---------------------------------
-
-    messages = get_messages()
-
-    for msg in messages:
-
-        with st.chat_message(msg["role"]):
-
-            st.markdown(msg["content"])
-
-    # ---------------------------------
-    # Chat Input
-    # ---------------------------------
-
-    question = st.chat_input(
-        "Ask anything from the uploaded documents..."
-    )
-
-    if question:
-
-        add_user_message(question)
-
-        with st.chat_message("user"):
-
-            st.markdown(question)
-
-        # Spinner
-        with st.spinner("🤖 Thinking..."):
-
-            answer, docs = get_answer(
-                question,
-                retriever,
-                llm
+        for file in uploaded_files:
+            st.write(
+                f"📄 {file.name} ({round(file.size/1024,2)} KB)"
             )
 
-        add_ai_message(answer)
+        # ----------------------------
+        # Extract Documents
+        # ----------------------------
 
-        with st.chat_message("assistant"):
+        documents = extract_text_from_pdfs(uploaded_files)
+        st.success("✅ Documents Extracted")
 
-            st.markdown(answer)
+        # ----------------------------
+        # Split Documents
+        # ----------------------------
 
-            # -----------------------------
-            # Source Documents
-            # -----------------------------
+        chunks = split_text(documents)
+        st.success(f"✅ Total Chunks : {len(chunks)}")
 
-            with st.expander("📚 Source Documents", expanded=False):
+        # ----------------------------
+        # Embeddings
+        # ----------------------------
 
-                for i, doc in enumerate(docs):
+        embedding_model = get_embedding_model()
+        st.success("✅ Embedding Model Loaded")
 
-                    st.markdown(f"### 📄 Source {i+1}")
+        # ----------------------------
+        # Vector Store
+        # ----------------------------
 
-                    source = doc.metadata.get(
-                        "source",
-                        "Unknown File"
-                    )
-
-                    page = doc.metadata.get(
-                        "page",
-                        "Unknown"
-                    )
-
-                    st.write(f"**File:** {source}")
-
-                    st.write(f"**Page:** {page}")
-
-                    st.write(doc.page_content)
-
-                    st.divider()
-
-    # ---------------------------------
-    # Dashboard Metrics
-    # ---------------------------------
-
-    st.markdown("---")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-
-        st.metric(
-            "📄 Documents",
-            len(uploaded_files)
+        vector_store = create_vector_store(
+            chunks,
+            embedding_model
         )
 
-    with col2:
+        st.success("✅ Vector Store Created")
 
-        st.metric(
-            "📑 Chunks",
-            len(chunks)
+        # ----------------------------
+        # Retriever
+        # ----------------------------
+
+        retriever = get_retriever(vector_store)
+        st.success("✅ Retriever Ready")
+
+        # ----------------------------
+        # Gemini
+        # ----------------------------
+
+        llm = get_chat_model()
+        st.success("✅ Gemini Model Loaded")
+
+        st.success("✅ Enterprise RAG Ready")
+
+        # ---------------------------------
+        # Previous Chat
+        # ---------------------------------
+
+        messages = get_messages()
+
+        for msg in messages:
+
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+
+        # ---------------------------------
+        # Chat Input
+        # ---------------------------------
+
+        question = st.chat_input(
+            "Ask anything from the uploaded documents..."
         )
 
-    with col3:
+        if question:
 
-        st.metric(
-            "🤖 Model",
-            "Gemini"
-        )
+            add_user_message(question)
+
+            with st.chat_message("user"):
+                st.markdown(question)
+
+            with st.spinner("🤖 Thinking..."):
+
+                answer, docs = get_answer(
+                    question,
+                    retriever,
+                    llm
+                )
+
+            add_ai_message(answer)
+
+            with st.chat_message("assistant"):
+
+                st.markdown(answer)
+
+                with st.expander("📚 Source Documents"):
+
+                    for i, doc in enumerate(docs):
+
+                        st.markdown(f"### 📄 Source {i+1}")
+
+                        source = doc.metadata.get(
+                            "source",
+                            "Unknown File"
+                        )
+
+                        page = doc.metadata.get(
+                            "page",
+                            "Unknown"
+                        )
+
+                        st.write(f"**File:** {source}")
+                        st.write(f"**Page:** {page}")
+                        st.write(doc.page_content)
+                        st.divider()
+
+        # ---------------------------------
+        # Dashboard Metrics
+        # ---------------------------------
+
+        st.markdown("---")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("📄 Documents", len(uploaded_files))
+
+        with col2:
+            st.metric("📑 Chunks", len(chunks))
+
+        with col3:
+            st.metric("🤖 Model", "Gemini")
+
+    except Exception as e:
+
+        st.error("❌ Error Occurred")
+        st.exception(e)
