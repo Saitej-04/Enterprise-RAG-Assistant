@@ -1,12 +1,20 @@
 import streamlit as st
 
-from src.pdf_loader import extract_text_from_pdf
+from src.pdf_loader import extract_text_from_pdfs
 from src.text_splitter import split_text
 from src.embeddings import get_embedding_model
 from src.vector_store import create_vector_store
 from src.retriever import get_retriever
 from src.chat_model import get_chat_model
+from src.rag_chain import get_answer
 
+from src.memory import (
+    initialize_memory,
+    add_user_message,
+    add_ai_message,
+    get_messages,
+    clear_chat
+)
 
 # ---------------------------------
 # Page Config
@@ -18,137 +26,178 @@ st.set_page_config(
     layout="wide"
 )
 
+initialize_memory()
+
+# ---------------------------------
+# Sidebar
+# ---------------------------------
+
+with st.sidebar:
+
+    st.title("💬 Chat")
+
+    st.markdown("---")
+
+    if st.button("🗑 Clear Chat"):
+
+        clear_chat()
+
+        st.rerun()
+
+# ---------------------------------
+# Main Title
+# ---------------------------------
+
 st.title("📊 Enterprise Financial Intelligence Assistant")
 
 st.markdown("### 📄 Upload Financial Documents")
 
-uploaded_file = st.file_uploader(
-    "Choose a PDF",
-    type=["pdf"]
+uploaded_files = st.file_uploader(
+    "Choose PDF Files",
+    type=["pdf"],
+    accept_multiple_files=True
 )
 
 # ---------------------------------
-# Process PDF
+# Process PDFs
 # ---------------------------------
 
-if uploaded_file is not None:
+if uploaded_files:
 
-    st.success(f"✅ Uploaded Successfully : {uploaded_file.name}")
+    st.success(f"✅ {len(uploaded_files)} PDF(s) Uploaded Successfully")
 
-    st.write("**File Name :**", uploaded_file.name)
+    for file in uploaded_files:
 
-    st.write(
-        "**File Size :**",
-        round(uploaded_file.size / 1024, 2),
-        "KB"
-    )
+        st.write(
+            f"📄 {file.name} ({round(file.size/1024,2)} KB)"
+        )
 
-    # ---------------------------------
-    # Extract Text
-    # ---------------------------------
+    # Extract Documents
 
-    pdf_text = extract_text_from_pdf(uploaded_file)
+    documents = extract_text_from_pdfs(uploaded_files)
 
-    # ---------------------------------
-    # Split Text
-    # ---------------------------------
+    # Split Documents
 
-    chunks = split_text(pdf_text)
+    chunks = split_text(documents)
 
-    st.success("✅ PDF Split Successfully")
+    st.success(f"✅ Total Chunks : {len(chunks)}")
 
-    st.write("Total Chunks :", len(chunks))
-
-    # ---------------------------------
-    # Embedding Model
-    # ---------------------------------
+    # Embeddings
 
     embedding_model = get_embedding_model()
 
-    st.success("✅ Embedding Model Loaded")
-
-    # ---------------------------------
-    # FAISS
-    # ---------------------------------
+    # Vector DB
 
     vector_store = create_vector_store(
         chunks,
         embedding_model
     )
 
-    st.success("✅ FAISS Vector Database Created")
-
-    # ---------------------------------
     # Retriever
-    # ---------------------------------
 
     retriever = get_retriever(vector_store)
 
-    st.success("✅ Retriever Created Successfully")
-
-    # ---------------------------------
-    # Gemini Model
-    # ---------------------------------
+    # Gemini
 
     llm = get_chat_model()
 
-    st.success("✅ Gemini Model Loaded")
+    st.success("✅ Enterprise RAG Ready")
+        # ---------------------------------
+    # Display Previous Chat
+    # ---------------------------------
+
+    messages = get_messages()
+
+    for msg in messages:
+
+        with st.chat_message(msg["role"]):
+
+            st.markdown(msg["content"])
 
     # ---------------------------------
-    # Ask Question
+    # Chat Input
     # ---------------------------------
 
-    st.markdown("---")
-
-    st.subheader("💬 Ask Questions")
-
-    question = st.text_input(
-        "Enter your Question"
+    question = st.chat_input(
+        "Ask anything from the uploaded documents..."
     )
 
     if question:
 
-        docs = retriever.invoke(question)
+        add_user_message(question)
 
-        context = ""
+        with st.chat_message("user"):
 
-        for doc in docs:
+            st.markdown(question)
 
-            context += doc.page_content
-            context += "\n\n"
+        # Spinner
+        with st.spinner("🤖 Thinking..."):
 
-        prompt = f"""
-You are an Enterprise Financial Intelligence Assistant.
+            answer, docs = get_answer(
+                question,
+                retriever,
+                llm
+            )
 
-Answer only from the given context.
+        add_ai_message(answer)
 
-If the answer is not available in the context, reply:
+        with st.chat_message("assistant"):
 
-"I could not find the answer in the uploaded document."
+            st.markdown(answer)
 
-Context:
+            # -----------------------------
+            # Source Documents
+            # -----------------------------
 
-{context}
+            with st.expander("📚 Source Documents", expanded=False):
 
-Question:
+                for i, doc in enumerate(docs):
 
-{question}
-"""
+                    st.markdown(f"### 📄 Source {i+1}")
 
-        response = llm.invoke(prompt)
+                    source = doc.metadata.get(
+                        "source",
+                        "Unknown File"
+                    )
 
-        st.subheader("🤖 AI Response")
+                    page = doc.metadata.get(
+                        "page",
+                        "Unknown"
+                    )
 
-        st.write(response.content)
+                    st.write(f"**File:** {source}")
 
-        st.markdown("---")
+                    st.write(f"**Page:** {page}")
 
-        st.subheader("📚 Source Chunks")
+                    st.write(doc.page_content)
 
-        for i, doc in enumerate(docs):
+                    st.divider()
 
-            st.markdown(f"### Source {i+1}")
+    # ---------------------------------
+    # Dashboard Metrics
+    # ---------------------------------
 
-            st.write(doc.page_content)
+    st.markdown("---")
 
-            st.divider()
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "📄 Documents",
+            len(uploaded_files)
+        )
+
+    with col2:
+
+        st.metric(
+            "📑 Chunks",
+            len(chunks)
+        )
+
+    with col3:
+
+        st.metric(
+            "🤖 Model",
+            "Gemini"
+        )

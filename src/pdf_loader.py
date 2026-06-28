@@ -1,18 +1,31 @@
 from pypdf import PdfReader
+from langchain.schema import Document
 
 
-def extract_text_from_pdf(uploaded_file):
+def extract_text_from_pdfs(uploaded_files):
 
-    pdf_reader = PdfReader(uploaded_file)
+    documents = []
 
-    text = ""
+    for uploaded_file in uploaded_files:
 
-    for page in pdf_reader.pages:
+        pdf_reader = PdfReader(uploaded_file)
 
-        page_text = page.extract_text()
+        file_name = uploaded_file.name
 
-        if page_text:
+        for page_number, page in enumerate(pdf_reader.pages, start=1):
 
-            text += page_text + "\n"
+            page_text = page.extract_text()
 
-    return text
+            if page_text:
+
+                documents.append(
+                    Document(
+                        page_content=page_text,
+                        metadata={
+                            "source": file_name,
+                            "page": page_number
+                        }
+                    )
+                )
+
+    return documents
