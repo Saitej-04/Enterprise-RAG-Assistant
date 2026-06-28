@@ -18,7 +18,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t $DOCKER_HUB/$IMAGE_NAME:latest .
+                docker build --no-cache -t $DOCKER_HUB/$IMAGE_NAME:latest .
                 '''
             }
         }
@@ -53,6 +53,9 @@ pipeline {
                 kubectl apply -f secret.yaml
                 kubectl apply -f deployment.yaml
                 kubectl apply -f service.yaml
+
+                kubectl rollout restart deployment rag-deployment
+                kubectl rollout status deployment rag-deployment
                 '''
             }
         }
