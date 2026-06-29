@@ -1,64 +1,139 @@
-# 📊 Enterprise Financial Intelligence Assistant
+# 🚀 Enterprise Financial Intelligence Assistant (RAG)
 
-An Enterprise-grade Retrieval-Augmented Generation (RAG) application built using **Streamlit**, **LangChain**, **Google Gemini**, **FAISS**, and **Hugging Face Embeddings**.
-
-The application allows users to upload multiple PDF documents, perform semantic search, and ask natural language questions to receive context-aware AI-generated responses with source citations.
+An AI-powered Enterprise Financial Intelligence Assistant built using **Retrieval-Augmented Generation (RAG)**. The application allows users to upload enterprise PDF documents, ask questions in natural language, and receive accurate AI-generated answers with source citations.
 
 ---
 
-# 🚀 Features
+## 📌 Project Overview
 
-- 📄 Multiple PDF Upload
-- 🔍 Semantic Search using FAISS
-- 🤖 Google Gemini 2.5 Flash Integration
-- 🧠 Hugging Face Sentence Embeddings
-- 💬 ChatGPT-style Chat Interface
-- 📝 Conversation Memory
-- 📚 Source Citations
-- 📑 Automatic PDF Chunking
-- ⚡ Fast Document Retrieval
-- 🎯 Context-aware AI Responses
+This project was developed as part of the Enterprise GenAI Capstone Project.
+
+The application processes enterprise documents, converts them into vector embeddings, stores them in a FAISS vector database, retrieves relevant information, and generates grounded responses using Google's Gemini LLM.
 
 ---
 
-# 🛠️ Tech Stack
+## ✨ Features
 
-| Technology | Purpose |
-|------------|----------|
-| Python | Backend |
-| Streamlit | User Interface |
-| LangChain | RAG Pipeline |
-| Google Gemini | Large Language Model |
-| HuggingFace | Embedding Model |
-| FAISS | Vector Database |
-| PyPDF | PDF Processing |
+* 📄 Upload one or more PDF documents
+* 📚 Automatic PDF parsing
+* ✂️ Intelligent text chunking
+* 🤖 HuggingFace Embeddings
+* 🔍 FAISS Vector Database
+* 💬 Natural Language Question Answering
+* 🧠 Google Gemini Integration
+* 📖 Source Document Citations
+* 💾 Chat History
+* 🌐 Streamlit Web Interface
+* 🐳 Docker Containerization
+* ⚙️ Jenkins CI/CD Pipeline
+* ☸️ Kubernetes Deployment
+
+---
+
+# 🏗 Architecture
+
+```
+                User
+                  │
+                  ▼
+          Streamlit Web App
+                  │
+                  ▼
+            Upload PDF Files
+                  │
+                  ▼
+             PDF Extraction
+                  │
+                  ▼
+            Text Chunking
+                  │
+                  ▼
+      HuggingFace Embeddings
+                  │
+                  ▼
+        FAISS Vector Database
+                  │
+                  ▼
+             Retriever
+                  │
+                  ▼
+         Google Gemini LLM
+                  │
+                  ▼
+        AI Generated Response
+                  │
+                  ▼
+        Source Document Citation
+```
+
+---
+
+# ⚙️ Tech Stack
+
+### Frontend
+
+* Streamlit
+
+### Backend
+
+* Python
+
+### AI / LLM
+
+* Google Gemini 2.5 Flash
+
+### Embeddings
+
+* HuggingFace Sentence Transformers
+
+### Vector Database
+
+* FAISS
+
+### Framework
+
+* LangChain
+
+### DevOps
+
+* Docker
+* Docker Hub
+* Jenkins
+* Kubernetes
 
 ---
 
 # 📂 Project Structure
 
-```text
-Enterprise-RAG-Assistant
+```
+Enterprise-RAG-Assistant/
 │
 ├── app.py
+├── Dockerfile
+├── Jenkinsfile
+├── deployment.yaml
+├── service.yaml
+├── configmap.yaml
+├── secret.yaml
 ├── requirements.txt
-├── README.md
 │
-├── src
-│   ├── chat_model.py
-│   ├── embeddings.py
-│   ├── memory.py
+├── src/
 │   ├── pdf_loader.py
-│   ├── prompt_template.py
-│   ├── rag_chain.py
-│   ├── retriever.py
 │   ├── text_splitter.py
-│   └── vector_store.py
+│   ├── embeddings.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── chat_model.py
+│   ├── rag_chain.py
+│   ├── memory.py
+│   └── prompt_template.py
+│
+└── README.md
 ```
 
 ---
 
-# ⚙️ Installation
+# 🚀 Installation
 
 Clone the repository
 
@@ -66,33 +141,39 @@ Clone the repository
 git clone https://github.com/Saitej-04/Enterprise-RAG-Assistant.git
 ```
 
-Go to the project folder
+Go to project directory
 
 ```bash
 cd Enterprise-RAG-Assistant
 ```
 
-Create Virtual Environment
+Create virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-Activate Virtual Environment
+Activate virtual environment
 
-### Windows
+Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-Install Dependencies
+Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the Application
+Create a `.env` file
+
+```env
+GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY
+```
+
+Run the application
 
 ```bash
 streamlit run app.py
@@ -100,54 +181,95 @@ streamlit run app.py
 
 ---
 
-# 📸 Workflow
+# 🐳 Docker
 
+Build Image
+
+```bash
+docker build -t enterprise-rag .
 ```
-Upload PDFs
-      ↓
-Extract Text
-      ↓
-Split into Chunks
-      ↓
-Generate Embeddings
-      ↓
-Store in FAISS
-      ↓
-Semantic Retrieval
-      ↓
-Google Gemini
-      ↓
-AI Response with Citations
+
+Run Container
+
+```bash
+docker run -p 8501:8501 enterprise-rag
 ```
 
 ---
 
-# 🎯 Current Features
+# ☸ Kubernetes
 
-✅ Multiple PDF Upload
+Deploy application
 
-✅ FAISS Vector Database
+```bash
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+```
 
-✅ Google Gemini Integration
+Check Pods
 
-✅ Hugging Face Embeddings
+```bash
+kubectl get pods
+```
 
-✅ ChatGPT-style UI
+Check Services
 
-✅ Conversation Memory
-
-✅ Source Citations
+```bash
+kubectl get svc
+```
 
 ---
 
-# 🚀 Future Enhancements
+# 🔄 CI/CD Pipeline
 
-- Persistent FAISS Storage
-- Docker Support
-- Kubernetes Deployment
-- Jenkins CI/CD Pipeline
-- AWS EKS Deployment
-- User Authentication
+GitHub
+
+⬇
+
+Jenkins Pipeline
+
+⬇
+
+Docker Build
+
+⬇
+
+Docker Hub Push
+
+⬇
+
+Kubernetes Deployment
+
+⬇
+
+Streamlit Application
+
+---
+
+# 📸 Application Workflow
+
+1. Upload PDF Documents
+2. Extract Text
+3. Split into Chunks
+4. Generate Embeddings
+5. Store in FAISS
+6. Retrieve Relevant Chunks
+7. Generate Response using Gemini
+8. Display Source Citations
+
+---
+
+# 📈 Future Enhancements
+
+* Persistent Vector Database
+* Authentication
+* Multi-user Support
+* Database Integration
+* Cloud Deployment
+* Chat Export
+* Role-based Access
 
 ---
 
@@ -155,10 +277,10 @@ AI Response with Citations
 
 **Sai Teja Korla**
 
-GitHub: https://github.com/Saitej-04
+GitHub:
+https://github.com/Saitej-04
 
-LinkedIn: https://linkedin.com/in/sai-teja-korla-b40822318
+LinkedIn:
+https://linkedin.com/in/sai-teja-korla-b40822318
 
 ---
-
-⭐ If you like this project, give it a star!
