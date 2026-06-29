@@ -6,6 +6,6 @@ metadata:
 
 data:
   APP_NAME: "Enterprise Financial Intelligence Assistant"
-  MODEL_NAME: "gemini-2.0-flash"
+  MODEL_NAME: "gemini-3.1-flash-lite"
   PORT: "8501"
   LOG_LEVEL: "INFO"
