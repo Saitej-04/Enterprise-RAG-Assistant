@@ -6,10 +6,11 @@ COPY requirements.txt .
 
 RUN pip install --upgrade pip
 
-RUN pip install torch==2.5.1+cpu \
-    --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --index-url https://download.pytorch.org/whl/cpu \
+    torch==2.5.1
 
 RUN pip install --default-timeout=1000 -r requirements.txt
+
 COPY . .
 
 EXPOSE 8501

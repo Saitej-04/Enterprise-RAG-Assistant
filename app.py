@@ -83,16 +83,21 @@ if uploaded_files:
         chunks = split_text(documents)
         st.success(f"✅ Total Chunks : {len(chunks)}")
 
-        # ----------------------------
+                # ----------------------------
         # Embeddings
         # ----------------------------
 
+        st.info("🔄 Loading Embedding Model...")
+
         embedding_model = get_embedding_model()
+
         st.success("✅ Embedding Model Loaded")
 
         # ----------------------------
         # Vector Store
         # ----------------------------
+
+        st.info("🔄 Creating Vector Store...")
 
         vector_store = create_vector_store(
             chunks,
@@ -105,17 +110,23 @@ if uploaded_files:
         # Retriever
         # ----------------------------
 
+        st.info("🔄 Initializing Retriever...")
+
         retriever = get_retriever(vector_store)
+
         st.success("✅ Retriever Ready")
 
         # ----------------------------
         # Gemini
         # ----------------------------
 
+        st.info("🔄 Loading Gemini Model...")
+
         llm = get_chat_model()
+
         st.success("✅ Gemini Model Loaded")
 
-        st.success("✅ Enterprise RAG Ready")
+        st.success("🎉 Enterprise RAG Ready")
 
         # ---------------------------------
         # Previous Chat
@@ -150,6 +161,8 @@ if uploaded_files:
                     retriever,
                     llm
                 )
+
+            add_ai_message(answer)
 
             add_ai_message(answer)
 
@@ -198,4 +211,5 @@ if uploaded_files:
     except Exception as e:
 
         st.error("❌ Error Occurred")
+
         st.exception(e)
